@@ -34,6 +34,7 @@ Function Search-User
                 Write-Host "Job Title: " -NoNewline; Get-JobTitle -User $objectList[$i]
                 Write-Host "Employee Phone: " -NoNewline; Get-EmployeePhone -User $objectList[$i]
                 Write-Host "Employee Manager: " -NoNewline; Get-Manager -User $objectList[$i]
+                Write-Host "Employee Groups: " -NoNewline; Get-Groups -User $objectList[$i]
                 break;
         }
 
@@ -100,6 +101,15 @@ Function Get-Manager
     $part = ($string -split ',')[0]
     $substring = $part.Substring(3)
     return $substring
+}
+
+Function Get-Groups
+{
+    param([System.Object]$User) 
+    $groupList = (Get-ADPrincipalGroupMembership -Identity $User.SamAccountName).Name
+    return $groupList
+    
 
 }
+
 Search-User
