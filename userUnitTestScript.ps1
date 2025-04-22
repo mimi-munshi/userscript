@@ -28,13 +28,22 @@ Function Search-User
             {
                 Write-Host $userNameList[$i] "is not Enabled"
             }
-                Write-Host "Account Name: " -NoNewline; Get-UserAccountName -User $objectList[$i]
-                Write-Host "Employee Name: " -NoNewline; Get-EmployeeName -User $objectList[$i]
-                Write-Host "Employee Number: " -NoNewline; Get-EmployeeNumber -User $objectList[$i]
-                Write-Host "Job Title: " -NoNewline; Get-JobTitle -User $objectList[$i]
-                Write-Host "Employee Phone: " -NoNewline; Get-EmployeePhone -User $objectList[$i]
-                Write-Host "Employee Manager: " -NoNewline; Get-Manager -User $objectList[$i]
-                Write-Host "Employee Groups: " -NoNewline; Get-Groups -User $objectList[$i]
+            
+            $userObjects = @{
+
+            
+                AccountName = (Get-UserAccountName -User $objectList[$i])
+                EmployeeName = (Get-EmployeeName -User $objectList[$i])
+                EmployeeNumber = (Get-EmployeeNumber -User $objectList[$i])
+                JobTitle = (Get-JobTitle -User $objectList[$i])
+                EmployeePhone = (Get-EmployeePhone -User $objectList[$i])
+                EmployeeManager = (Get-Manager -User $objectList[$i])
+                EmployeeGroups = (Get-OU -User $objectList[$i])
+
+            }
+            $jsonOutput = $userObjects | ConvertTo-Json
+            Write-Host $jsonOutput
+               
                 break;
         }
 
@@ -96,14 +105,24 @@ Function Get-EmployeePhone
 
 Function Get-Manager
 {
+   
     param([System.Object]$User)
+    
+    if ($null -ne (Get-AdUser -Identity $User.SamAccountName -Properties manager).manager)
+    {
     $string = (Get-AdUser -Identity $User.SamAccountName -Properties manager).manager
     $part = ($string -split ',')[0]
     $substring = $part.Substring(3)
     return $substring
+    }
+    else 
+    {
+    $substring = 0
+    }
+    
 }
 
-Function Get-Groups
+Function Get-OU
 {
     param([System.Object]$User) 
     $groupList = (Get-ADPrincipalGroupMembership -Identity $User.SamAccountName).Name
