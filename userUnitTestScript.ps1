@@ -3,11 +3,13 @@
 
 Function Search-User
 {
+    Clear-Content -Path "$HOME\Downloads\userscript.json"
    [string[]]$userNameList = (Get-AdUser -Filter * ).Name
    $objectList = (Get-AdUser -Filter *)
    [string]$name;
    [char]$check
    [int]$count = 0;
+   do {
    $name = Read-Host "Enter Name";
    for ($i = 0; $i -lt $userNameList.length; $i++)
    {
@@ -29,7 +31,7 @@ Function Search-User
                 Write-Host $userNameList[$i] "is not Enabled"
             }
             
-            $userObjects = @{
+            $userObjects = [ordered]@{
 
             
                 AccountName = (Get-UserAccountName -User $objectList[$i])
@@ -38,11 +40,12 @@ Function Search-User
                 JobTitle = (Get-JobTitle -User $objectList[$i])
                 EmployeePhone = (Get-EmployeePhone -User $objectList[$i])
                 EmployeeManager = (Get-Manager -User $objectList[$i])
-                EmployeeGroups = (Get-OU -User $objectList[$i])
+                EmployeeGroups = (Get-Groups -User $objectList[$i])
 
             }
             $jsonOutput = $userObjects | ConvertTo-Json
             Write-Host $jsonOutput
+            Add-Content -Path "$HOME\Downloads\userscript.json" -Value $jsonOutput
                
                 break;
         }
@@ -50,9 +53,8 @@ Function Search-User
         
     }
    
-
-   }
- 
+  
+}
 
    
    if( $count -le 0)
@@ -60,8 +62,11 @@ Function Search-User
        Write-Host "User does not exist in Active Directory"
    }
 
-
+    $check2 = Read-Host "Do you want to search for another user? (y/n)"
+} while($check2 -eq 'Y' -or $check2 -eq 'y')
+   
 }
+
 
 Function Get-Enabled
 {
@@ -121,14 +126,15 @@ Function Get-Manager
     }
     
 }
-
-Function Get-OU
+Function Get-Groups
 {
     param([System.Object]$User) 
     $groupList = (Get-ADPrincipalGroupMembership -Identity $User.SamAccountName).Name
     return $groupList
     
 
+
 }
+
 
 Search-User
